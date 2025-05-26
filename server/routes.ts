@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/transactions/:id/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       // Only accountants and admins can approve/reject transactions
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/replenishments", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const requestData = insertReplenishmentRequestSchema.parse(req.body);
 
       const request = await storage.createReplenishmentRequest(requestData, userId);
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/replenishments/:id/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       // Only accountants and admins can approve/reject replenishments
