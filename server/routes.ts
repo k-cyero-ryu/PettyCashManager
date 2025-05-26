@@ -41,22 +41,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use("/uploads", express.static(uploadDir));
 
-  // Auth routes
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth routes are now handled in auth.ts
 
   // User management routes (Admin only)
   app.get("/api/users", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (user?.role !== "admin") {
@@ -73,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/users/:userId/role", isAuthenticated, async (req: any, res) => {
     try {
-      const adminId = req.user.claims.sub;
+      const adminId = req.user.id;
       const admin = await storage.getUser(adminId);
       
       if (admin?.role !== "admin") {
@@ -100,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status, limit = 50, offset = 0 } = req.query;
       console.log("🔍 API RECEIVED QUERY:", req.query);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       let filters: any = { limit: parseInt(limit), offset: parseInt(offset) };
@@ -139,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/transactions", isAuthenticated, upload.single("receipt"), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const transactionData = insertTransactionSchema.parse(req.body);
 
       let receiptUrl = undefined;
