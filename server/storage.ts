@@ -125,11 +125,16 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .leftJoin(users, eq(transactions.submittedBy, users.id));
 
+    const whereConditions = [];
     if (filters?.status) {
-      query = query.where(eq(transactions.status, filters.status as "pending" | "approved" | "rejected"));
+      whereConditions.push(eq(transactions.status, filters.status as "pending" | "approved" | "rejected"));
     }
     if (filters?.userId) {
-      query = query.where(eq(transactions.submittedBy, filters.userId));
+      whereConditions.push(eq(transactions.submittedBy, filters.userId));
+    }
+    
+    if (whereConditions.length > 0) {
+      query = query.where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions));
     }
 
     query = query.orderBy(desc(transactions.createdAt));
