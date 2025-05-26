@@ -82,7 +82,7 @@ export default function UsersManagement() {
   };
 
   // Only admins can access this page
-  if (user?.role !== "admin") {
+  if (!user || user.role !== "admin") {
     return (
       <div className="container mx-auto p-6">
         <Card>
@@ -92,6 +92,11 @@ export default function UsersManagement() {
             <p className="text-muted-foreground">
               You need administrator privileges to access user management.
             </p>
+            {user && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Current role: {user.role || "Unknown"}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
