@@ -11,6 +11,7 @@ import Approvals from "@/pages/approvals";
 import Replenishment from "@/pages/replenishment";
 import Reports from "@/pages/reports";
 import Reconciliation from "@/pages/reconciliation";
+import Users from "@/pages/users";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/replenishment" component={Replenishment} />
           <Route path="/reports" component={Reports} />
           <Route path="/reconciliation" component={Reconciliation} />
+          <Route path="/users" component={Users} />
         </>
       )}
       <Route component={NotFound} />
