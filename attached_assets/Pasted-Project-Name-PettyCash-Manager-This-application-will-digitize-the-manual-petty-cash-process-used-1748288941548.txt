@@ -1,0 +1,55 @@
+Project Name: PettyCash Manager
+
+This application will digitize the manual petty cash process used by small-to-medium-sized enterprises (SMEs). It aims to ensure accountability, reduce human error, and provide real-time transparency for cash transactions handled in the accounting department.
+1.1 Scope
+The system will provide a secure, browser-based application to record, track, and reconcile petty cash transactions. It will support multi-user access with role-based permissions and approval workflows.
+1.2 Objectives
+•	Track cash inflows and outflows in real time.
+•	Enforce authorization and justification for all disbursements.
+•	Provide a clear audit trail with reconciliation capabilities.
+•	Export reports for accounting and audit purposes.
+________________________________________
+2. User Roles and Permissions
+Role	Permissions
+Custodian	Enter transactions, attach receipts, request replenishment.
+Accountant	Review, approve or reject transactions and replenishment.
+Admin/Manager	Manage users, settings, approve high-value transactions.
+	
+________________________________________
+3. Functional Requirements
+3.1 Petty Cash Journal
+•	Display a table of transactions:
+o	Date
+o	Description
+o	Debit (Amount Paid)
+o	Credit (Amount Received)
+o	Received By
+o	Approved By
+o	Balance (auto-calculated)
+o	Payment Method / Source
+o	Receipt Upload (PDF/Image)
+3.2 Add New Transaction
+•	Form with validation:
+o	Required fields: Date, Description, Amount, Received By, Payment Method, Receipt
+o	Automatically adjust the running balance
+o	Require approval (based on amount thresholds)
+3.3 Approval Workflow
+•	Pending transactions go into an "Approval Queue"
+•	Approvers receive notifications (email or in-app)
+•	Option to Approve, Reject, or Request Info
+3.4 Replenishment Requests
+•	Custodian can trigger replenishment once threshold is reached
+•	Generates a summary report of pending expenses
+•	Approval process for cash injection
+•	Adds a Credit entry in the journal
+3.5 Reconciliation
+•	Monthly/weekly reconciliation report comparing:
+o	Initial float
+o	Total outflows and inflows
+o	Final balance
+•	Supports marking transactions as Reviewed
+3.6 Reports & Exports
+•	Export journal (PDF, CSV)
+•	Filters: Date range, status, user, category
+•	Monthly summary reports
+•	Printable receipts
