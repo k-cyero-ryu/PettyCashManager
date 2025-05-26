@@ -341,11 +341,11 @@ export default function UsersManagement() {
                       {userData.role.charAt(0).toUpperCase() + userData.role.slice(1)}
                     </Badge>
 
-                    {userData.id !== user?.id && (
+                    {String(userData.id) !== String(user?.id) && (
                       <Select
                         value={userData.role}
-                        onValueChange={(newRole) => handleRoleChange(userData.id, newRole)}
-                        disabled={updatingUserId === userData.id}
+                        onValueChange={(newRole) => handleRoleChange(String(userData.id), newRole)}
+                        disabled={updatingUserId === String(userData.id)}
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />
@@ -367,7 +367,7 @@ export default function UsersManagement() {
                 </div>
               ))}
 
-              {users?.length === 0 && (
+              {(users as User[] || []).length === 0 && (
                 <div className="text-center py-8">
                   <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No users found</p>
