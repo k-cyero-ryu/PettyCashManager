@@ -10,6 +10,7 @@ import {
   FileText, 
   Calculator,
   Settings,
+  Users,
   LogOut 
 } from "lucide-react";
 
@@ -30,6 +31,9 @@ export default function Sidebar() {
     { name: "Replenishment", href: "/replenishment", icon: PlusCircle },
     { name: "Reports", href: "/reports", icon: FileText },
     { name: "Reconciliation", href: "/reconciliation", icon: Calculator },
+    ...(user?.role === "admin" ? [
+      { name: "Users", href: "/users", icon: Users }
+    ] : []),
   ];
 
   const getInitials = (firstName?: string, lastName?: string) => {
