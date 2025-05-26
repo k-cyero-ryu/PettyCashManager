@@ -27,10 +27,10 @@ export const sessions = pgTable(
 
 // User storage table for traditional authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  username: varchar("username", { length: 50 }).unique(),
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).unique().notNull(),
   email: varchar("email").unique(),
-  password: varchar("password"),
+  password: varchar("password").notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   role: varchar("role", { enum: ["custodian", "accountant", "admin"] }).notNull().default("custodian"),

@@ -32,7 +32,7 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
   // Serve uploaded files
   app.use("/uploads", isAuthenticated, (req, res, next) => {
