@@ -101,7 +101,7 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   }): Promise<any[]> {
-    let query = db
+    const baseQuery = db
       .select({
         id: transactions.id,
         date: transactions.date,
@@ -125,28 +125,30 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .leftJoin(users, eq(transactions.submittedBy, users.id));
 
-    const whereConditions = [];
+    // Build where conditions
+    const conditions = [];
     if (filters?.status) {
-      whereConditions.push(eq(transactions.status, filters.status as "pending" | "approved" | "rejected"));
+      conditions.push(eq(transactions.status, filters.status));
     }
     if (filters?.userId) {
-      whereConditions.push(eq(transactions.submittedBy, filters.userId));
+      conditions.push(eq(transactions.submittedBy, filters.userId));
     }
     
-    if (whereConditions.length > 0) {
-      query = query.where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions));
+    // Apply where conditions if any exist
+    let finalQuery = baseQuery;
+    if (conditions.length === 1) {
+      finalQuery = baseQuery.where(conditions[0]);
+    } else if (conditions.length > 1) {
+      finalQuery = baseQuery.where(and(...conditions));
     }
 
-    query = query.orderBy(desc(transactions.createdAt));
+    // Apply ordering and pagination
+    const result = await finalQuery
+      .orderBy(desc(transactions.createdAt))
+      .limit(filters?.limit || 50)
+      .offset(filters?.offset || 0);
 
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset);
-    }
-
-    return await query;
+    return result;
   }
 
   async getTransaction(id: number): Promise<Transaction | undefined> {
