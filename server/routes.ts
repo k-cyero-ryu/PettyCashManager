@@ -57,6 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/transactions", isAuthenticated, async (req: any, res) => {
     try {
       const { status, limit = 50, offset = 0 } = req.query;
+      console.log("🔍 API RECEIVED QUERY:", req.query);
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
@@ -64,6 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (status) {
         filters.status = status;
+        console.log("✅ STATUS FILTER APPLIED:", status);
+      } else {
+        console.log("❌ NO STATUS FILTER");
       }
 
       // If user is custodian, only show their own transactions
@@ -71,7 +75,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.userId = userId;
       }
 
+      console.log("📋 FINAL FILTERS:", filters);
       const transactions = await storage.getTransactions(filters);
+      console.log("📦 RETURNED TRANSACTIONS COUNT:", transactions.length);
       res.json(transactions);
     } catch (error) {
       console.error("Error fetching transactions:", error);

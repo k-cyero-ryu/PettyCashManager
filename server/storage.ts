@@ -126,10 +126,16 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(transactions.submittedBy, users.id));
 
     // Apply filters
+    console.log("🗄️ STORAGE RECEIVED FILTERS:", filters);
     if (filters?.status) {
+      console.log("🎯 APPLYING STATUS FILTER:", filters.status);
       query = query.where(eq(transactions.status, filters.status));
+    } else {
+      console.log("⚠️ NO STATUS FILTER IN STORAGE");
     }
+    
     if (filters?.userId) {
+      console.log("👤 APPLYING USER FILTER:", filters.userId);
       if (filters?.status) {
         query = query.where(and(
           eq(transactions.status, filters.status),
@@ -140,10 +146,13 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    return await query
+    const result = await query
       .orderBy(desc(transactions.createdAt))
       .limit(filters?.limit || 50)
       .offset(filters?.offset || 0);
+    
+    console.log("📊 STORAGE RETURNING COUNT:", result.length);
+    return result;
   }
 
   async getTransaction(id: number): Promise<Transaction | undefined> {
