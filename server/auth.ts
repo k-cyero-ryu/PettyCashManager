@@ -97,7 +97,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, email, password, firstName, lastName } = req.body;
+      const { username, email, password, firstName, lastName, role } = req.body;
       
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
@@ -110,13 +110,20 @@ export function setupAuth(app: Express) {
         password: await hashPassword(password),
         firstName,
         lastName,
+        role: role || "custodian",
       });
 
-      req.login(user, (err) => {
-        if (err) return next(err);
-        res.status(201).json(user);
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        createdAt: user.createdAt
       });
     } catch (error) {
+      console.error("Registration error:", error);
       res.status(500).json({ message: "Registration failed" });
     }
   });

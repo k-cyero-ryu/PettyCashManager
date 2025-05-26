@@ -164,7 +164,7 @@ export default function UsersManagement() {
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto ml-64">
         <div className="container mx-auto p-6">
           <div className="mb-6 flex justify-between items-center">
             <div>
