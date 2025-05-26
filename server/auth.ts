@@ -40,7 +40,7 @@ export function setupAuth(app: Express) {
   });
 
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
+    secret: "petty-cash-secret-key-2024-secure",
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
@@ -122,17 +122,24 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    console.log("📥 Login request received:", req.body);
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      console.log("🔍 Auth result - err:", err, "user:", !!user, "info:", info);
       if (err) {
+        console.log("❌ Authentication error:", err);
         return res.status(500).json({ message: "Login error" });
       }
       if (!user) {
+        console.log("❌ No user returned from authentication");
         return res.status(401).json({ message: "Invalid username or password" });
       }
-      req.login(user, (err) => {
+      console.log("✅ User authenticated, creating session");
+      req.login(user, (err: any) => {
         if (err) {
+          console.log("❌ Session creation error:", err);
           return res.status(500).json({ message: "Login session error" });
         }
+        console.log("✅ Login successful, returning user");
         res.status(200).json(user);
       });
     })(req, res, next);
