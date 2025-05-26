@@ -31,8 +31,13 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
+  // Auth middleware MUST be setup first
   setupAuth(app);
+
+  // Test route to verify API is working
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "API is working" });
+  });
 
   // Serve uploaded files
   app.use("/uploads", isAuthenticated, (req, res, next) => {
@@ -40,8 +45,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
   app.use("/uploads", express.static(uploadDir));
-
-  // Auth routes are now handled in auth.ts
 
   // User management routes (Admin only)
   app.get("/api/users", isAuthenticated, async (req: any, res) => {
