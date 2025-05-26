@@ -101,7 +101,7 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   }): Promise<any[]> {
-    const baseQuery = db
+    let query = db
       .select({
         id: transactions.id,
         date: transactions.date,
@@ -125,30 +125,25 @@ export class DatabaseStorage implements IStorage {
       .from(transactions)
       .leftJoin(users, eq(transactions.submittedBy, users.id));
 
-    // Build where conditions
-    const conditions = [];
+    // Apply filters
     if (filters?.status) {
-      conditions.push(eq(transactions.status, filters.status));
+      query = query.where(eq(transactions.status, filters.status));
     }
     if (filters?.userId) {
-      conditions.push(eq(transactions.submittedBy, filters.userId));
-    }
-    
-    // Apply where conditions if any exist
-    let finalQuery = baseQuery;
-    if (conditions.length === 1) {
-      finalQuery = baseQuery.where(conditions[0]);
-    } else if (conditions.length > 1) {
-      finalQuery = baseQuery.where(and(...conditions));
+      if (filters?.status) {
+        query = query.where(and(
+          eq(transactions.status, filters.status),
+          eq(transactions.submittedBy, filters.userId)
+        ));
+      } else {
+        query = query.where(eq(transactions.submittedBy, filters.userId));
+      }
     }
 
-    // Apply ordering and pagination
-    const result = await finalQuery
+    return await query
       .orderBy(desc(transactions.createdAt))
       .limit(filters?.limit || 50)
       .offset(filters?.offset || 0);
-
-    return result;
   }
 
   async getTransaction(id: number): Promise<Transaction | undefined> {
