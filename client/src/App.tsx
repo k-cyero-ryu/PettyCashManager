@@ -8,6 +8,9 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Transactions from "@/pages/transactions";
 import Approvals from "@/pages/approvals";
+import Replenishment from "@/pages/replenishment";
+import Reports from "@/pages/reports";
+import Reconciliation from "@/pages/reconciliation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +25,9 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/transactions" component={Transactions} />
           <Route path="/approvals" component={Approvals} />
+          <Route path="/replenishment" component={Replenishment} />
+          <Route path="/reports" component={Reports} />
+          <Route path="/reconciliation" component={Reconciliation} />
         </>
       )}
       <Route component={NotFound} />

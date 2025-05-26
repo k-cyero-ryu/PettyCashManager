@@ -129,6 +129,8 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
   runningBalance: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  date: z.string().min(1, "Date is required"),
 });
 
 export const updateTransactionStatusSchema = z.object({
