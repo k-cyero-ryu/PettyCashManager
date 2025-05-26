@@ -196,7 +196,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .where(
-        sql`${transactions.date} >= ${startOfMonth.toISOString()} AND ${transactions.status} = 'approved'`
+        eq(transactions.status, "approved")
       );
 
     const monthlyTotal = monthlyStats[0]?.total ? parseFloat(monthlyStats[0].total) : 0;
