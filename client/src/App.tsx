@@ -31,7 +31,7 @@ function Router() {
       {!user ? (
         <>
           <Route path="/auth" component={AuthPage} />
-          <Route path="/" component={Landing} />
+          <Route path="/" component={AuthPage} />
         </>
       ) : (
         <>
