@@ -81,7 +81,7 @@ export class DatabaseStorage implements IStorage {
 
     const currentBalance = latestTransaction[0]?.balance ? parseFloat(latestTransaction[0].balance) : 0;
     const transactionAmount = parseFloat(transaction.amount);
-    const newBalance = currentBalance - transactionAmount; // Subtract for expenses
+    const newBalance = currentBalance + transactionAmount; // Add positive amounts (replenishments), subtract negative amounts (expenses)
 
     const [newTransaction] = await db
       .insert(transactions)
@@ -174,10 +174,11 @@ export class DatabaseStorage implements IStorage {
     averageTransaction: number;
     totalTransactions: number;
   }> {
-    // Get current balance from latest transaction
+    // Get current balance from latest approved transaction
     const latestTransaction = await db
       .select({ balance: transactions.runningBalance })
       .from(transactions)
+      .where(eq(transactions.status, "approved"))
       .orderBy(desc(transactions.createdAt))
       .limit(1);
 
@@ -195,10 +196,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(transactions)
       .where(
-        and(
-          sql`${transactions.date} >= ${startOfMonth}`,
-          eq(transactions.status, "approved")
-        )
+        sql`${transactions.date} >= ${startOfMonth.toISOString()} AND ${transactions.status} = 'approved'`
       );
 
     const monthlyTotal = monthlyStats[0]?.total ? parseFloat(monthlyStats[0].total) : 0;
