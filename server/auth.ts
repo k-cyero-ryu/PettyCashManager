@@ -97,21 +97,34 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      console.log("📝 Registration attempt:", req.body);
       const { username, email, password, firstName, lastName, role } = req.body;
       
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
+        console.log("❌ User already exists:", username);
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const user = await storage.createUser({
+      console.log("🔒 Hashing password...");
+      const hashedPassword = await hashPassword(password);
+      
+      console.log("💾 Creating user in database...");
+      const userData = {
         username,
-        email,
-        password: await hashPassword(password),
-        firstName,
-        lastName,
-        role: role || "custodian",
-      });
+        email: email || null,
+        password: hashedPassword,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        role: (role as "custodian" | "accountant" | "admin") || "custodian",
+      };
+
+      const user = await storage.createUser(userData);
+      console.log("✅ User created successfully:", user.id);
 
       res.status(201).json({
         id: user.id,
@@ -123,8 +136,8 @@ export function setupAuth(app: Express) {
         createdAt: user.createdAt
       });
     } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed" });
+      console.error("💥 Registration error:", error);
+      res.status(500).json({ message: "Registration failed: " + (error as Error).message });
     }
   });
 
