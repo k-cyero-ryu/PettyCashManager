@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Eye, Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Transaction {
@@ -35,6 +37,7 @@ export default function TransactionTable({
   totalPages = 1,
   onPageChange 
 }: TransactionTableProps) {
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
@@ -59,8 +62,7 @@ export default function TransactionTable({
   };
 
   const handleViewTransaction = (transaction: Transaction) => {
-    // In a real app, this would open a detailed view modal
-    console.log("View transaction:", transaction);
+    setSelectedTransaction(transaction);
   };
 
   const handleDownloadReceipt = (transaction: Transaction) => {
@@ -181,6 +183,81 @@ export default function TransactionTable({
             </Button>
           </div>
         </div>
+      )}
+
+      {/* Transaction Details Modal */}
+      {selectedTransaction && (
+        <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Transaction Details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-3">{selectedTransaction.description}</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Amount</p>
+                    <p className="font-medium text-lg">
+                      {formatAmount(selectedTransaction.amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Date</p>
+                    <p className="font-medium">
+                      {new Date(selectedTransaction.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Received By</p>
+                    <p className="font-medium">{selectedTransaction.receivedBy}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Payment Method</p>
+                    <p className="font-medium capitalize">{selectedTransaction.paymentMethod}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Status</p>
+                    <div className="mt-1">
+                      {getStatusBadge(selectedTransaction.status)}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Running Balance</p>
+                    <p className="font-medium">
+                      ${parseFloat(selectedTransaction.runningBalance || "0").toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+                {selectedTransaction.submitterName && (
+                  <div className="mt-3">
+                    <p className="text-gray-500 text-sm">Submitted By</p>
+                    <p className="font-medium">{selectedTransaction.submitterName}</p>
+                  </div>
+                )}
+              </div>
+              
+              {selectedTransaction.receiptUrl ? (
+                <div>
+                  <p className="text-gray-500 text-sm mb-2">Receipt</p>
+                  <a 
+                    href={selectedTransaction.receiptUrl}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline inline-flex items-center"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    View Receipt ({selectedTransaction.receiptFileName})
+                  </a>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-gray-500 text-sm">No receipt attached</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
