@@ -97,15 +97,6 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
   });
 
   const onSubmit = (data: TransactionFormData) => {
-    if (!selectedFile) {
-      toast({
-        title: "Receipt Required",
-        description: "Please upload a receipt for this transaction",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     createTransactionMutation.mutate(data);
   };
 
@@ -220,7 +211,8 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
 
           {/* Receipt Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Receipt Upload *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Receipt Upload (Optional)</label>
+            <p className="text-sm text-gray-500 mb-2">Upload a receipt if available (PDF, JPG, PNG - max 5MB)</p>
             <FileUpload
               onFileSelect={setSelectedFile}
               selectedFile={selectedFile}
