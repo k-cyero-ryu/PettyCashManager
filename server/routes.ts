@@ -143,19 +143,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         receiptFileName = req.file.originalname;
       }
 
-      const transaction = await storage.createTransaction(
-        {
-          ...transactionData,
-          receiptUrl,
-          receiptFileName,
-        },
-        userId
-      );
+      // Parse date string to Date object
+      const parsedData = {
+        ...transactionData,
+        date: new Date(transactionData.date),
+        receiptUrl,
+        receiptFileName,
+      };
+
+      const transaction = await storage.createTransaction(parsedData, userId);
 
       res.status(201).json(transaction);
     } catch (error) {
       console.error("Error creating transaction:", error);
-      if (error.name === "ZodError") {
+      if (error?.name === "ZodError") {
         res.status(400).json({ message: "Invalid transaction data", errors: error.errors });
       } else {
         res.status(500).json({ message: "Failed to create transaction" });
