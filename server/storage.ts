@@ -2,6 +2,7 @@ import {
   users,
   transactions,
   replenishmentRequests,
+  receipts,
   settings,
   type User,
   type UpsertUser,
@@ -10,6 +11,8 @@ import {
   type UpdateTransactionStatus,
   type ReplenishmentRequest,
   type InsertReplenishmentRequest,
+  type Receipt,
+  type InsertReceipt,
   type Setting,
 } from "@shared/schema";
 import { db } from "./db";
@@ -45,6 +48,12 @@ export interface IStorage {
   createReplenishmentRequest(request: InsertReplenishmentRequest, requestedBy: string): Promise<ReplenishmentRequest>;
   getReplenishmentRequests(status?: string): Promise<ReplenishmentRequest[]>;
   updateReplenishmentStatus(id: number, status: string, approvedBy: string, comments?: string): Promise<ReplenishmentRequest>;
+  
+  // Receipt operations
+  createReceipt(receipt: InsertReceipt, uploadedBy: string): Promise<Receipt>;
+  getReceiptsByTransaction(transactionId: number): Promise<Receipt[]>;
+  getReceipt(id: number): Promise<Receipt | undefined>;
+  deleteReceipt(id: number): Promise<void>;
   
   // Settings operations
   getSetting(key: string): Promise<string | undefined>;
@@ -312,6 +321,39 @@ export class DatabaseStorage implements IStorage {
     }
 
     return request;
+  }
+
+  // Receipt operations
+  async createReceipt(receiptData: InsertReceipt, uploadedBy: string): Promise<Receipt> {
+    const [receipt] = await db
+      .insert(receipts)
+      .values({
+        ...receiptData,
+        uploadedBy,
+      })
+      .returning();
+
+    return receipt;
+  }
+
+  async getReceiptsByTransaction(transactionId: number): Promise<Receipt[]> {
+    return await db
+      .select()
+      .from(receipts)
+      .where(eq(receipts.transactionId, transactionId))
+      .orderBy(desc(receipts.createdAt));
+  }
+
+  async getReceipt(id: number): Promise<Receipt | undefined> {
+    const [receipt] = await db
+      .select()
+      .from(receipts)
+      .where(eq(receipts.id, id));
+    return receipt;
+  }
+
+  async deleteReceipt(id: number): Promise<void> {
+    await db.delete(receipts).where(eq(receipts.id, id));
   }
 
   // Settings operations

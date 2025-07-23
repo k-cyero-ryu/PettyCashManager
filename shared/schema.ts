@@ -72,6 +72,19 @@ export const replenishmentRequests = pgTable("replenishment_requests", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Receipts table for multiple receipts per transaction
+export const receipts = pgTable("receipts", {
+  id: serial("id").primaryKey(),
+  transactionId: integer("transaction_id").notNull().references(() => transactions.id, { onDelete: "cascade" }),
+  fileName: varchar("file_name").notNull(),
+  originalName: varchar("original_name").notNull(),
+  url: varchar("url").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mimeType: varchar("mime_type").notNull(),
+  uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Settings table for application configuration
 export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),
@@ -89,7 +102,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   approvedReplenishments: many(replenishmentRequests, { relationName: "approvedReplenishments" }),
 }));
 
-export const transactionsRelations = relations(transactions, ({ one }) => ({
+export const transactionsRelations = relations(transactions, ({ one, many }) => ({
   submitter: one(users, {
     fields: [transactions.submittedBy],
     references: [users.id],
@@ -99,6 +112,18 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     fields: [transactions.approvedBy],
     references: [users.id],
     relationName: "approvedTransactions",
+  }),
+  receipts: many(receipts),
+}));
+
+export const receiptsRelations = relations(receipts, ({ one }) => ({
+  transaction: one(transactions, {
+    fields: [receipts.transactionId],
+    references: [transactions.id],
+  }),
+  uploader: one(users, {
+    fields: [receipts.uploadedBy],
+    references: [users.id],
   }),
 }));
 
@@ -149,6 +174,12 @@ export const insertReplenishmentRequestSchema = createInsertSchema(replenishment
   updatedAt: true,
 });
 
+export const insertReceiptSchema = createInsertSchema(receipts).omit({
+  id: true,
+  uploadedBy: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -157,4 +188,6 @@ export type Transaction = typeof transactions.$inferSelect;
 export type UpdateTransactionStatus = z.infer<typeof updateTransactionStatusSchema>;
 export type InsertReplenishmentRequest = z.infer<typeof insertReplenishmentRequestSchema>;
 export type ReplenishmentRequest = typeof replenishmentRequests.$inferSelect;
+export type InsertReceipt = z.infer<typeof insertReceiptSchema>;
+export type Receipt = typeof receipts.$inferSelect;
 export type Setting = typeof settings.$inferSelect;

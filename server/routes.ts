@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertTransactionSchema, updateTransactionStatusSchema, insertReplenishmentRequestSchema } from "@shared/schema";
+import { insertTransactionSchema, updateTransactionStatusSchema, insertReplenishmentRequestSchema, insertReceiptSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -256,6 +256,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating replenishment status:", error);
       res.status(500).json({ message: "Failed to update replenishment status" });
+    }
+  });
+
+  // Receipt management routes
+  app.post("/api/transactions/:transactionId/receipts", isAuthenticated, upload.array('receipts', 10), async (req: any, res) => {
+    try {
+      const transactionId = parseInt(req.params.transactionId);
+      const files = req.files as Express.Multer.File[];
+      const userId = req.user.id.toString();
+
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+
+      // Verify transaction exists and user has access
+      const transaction = await storage.getTransaction(transactionId);
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      if (user?.role === "custodian" && transaction.submittedBy !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const createdReceipts = [];
+      
+      for (const file of files) {
+        const fileName = `receipt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${path.extname(file.originalname)}`;
+        const finalPath = path.join(uploadDir, fileName);
+        
+        // Move uploaded file to final location
+        fs.renameSync(file.path, finalPath);
+
+        const receiptData = {
+          transactionId,
+          fileName,
+          originalName: file.originalname,
+          url: `/uploads/${fileName}`,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+        };
+
+        const receipt = await storage.createReceipt(receiptData, userId);
+        createdReceipts.push(receipt);
+      }
+
+      res.status(201).json({ 
+        message: `${createdReceipts.length} receipt(s) uploaded successfully`,
+        receipts: createdReceipts 
+      });
+    } catch (error) {
+      console.error("Error uploading receipts:", error);
+      res.status(500).json({ message: "Failed to upload receipts" });
+    }
+  });
+
+  app.get("/api/transactions/:transactionId/receipts", isAuthenticated, async (req: any, res) => {
+    try {
+      const transactionId = parseInt(req.params.transactionId);
+      const receipts = await storage.getReceiptsByTransaction(transactionId);
+      res.json(receipts);
+    } catch (error) {
+      console.error("Error fetching receipts:", error);
+      res.status(500).json({ message: "Failed to fetch receipts" });
+    }
+  });
+
+  app.delete("/api/receipts/:receiptId", isAuthenticated, async (req: any, res) => {
+    try {
+      const receiptId = parseInt(req.params.receiptId);
+      const userId = req.user.id.toString();
+      
+      // Get receipt to check permissions
+      const receipt = await storage.getReceipt(receiptId);
+      if (!receipt) {
+        return res.status(404).json({ message: "Receipt not found" });
+      }
+
+      const user = await storage.getUser(req.user.id);
+      
+      // Only allow deletion by the uploader, admin, or accountant
+      if (user?.role === "custodian" && receipt.uploadedBy !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Delete the physical file
+      try {
+        const filePath = path.join(uploadDir, receipt.fileName);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (fileError) {
+        console.error("Error deleting physical file:", fileError);
+        // Continue with database deletion even if file deletion fails
+      }
+
+      await storage.deleteReceipt(receiptId);
+      res.json({ message: "Receipt deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting receipt:", error);
+      res.status(500).json({ message: "Failed to delete receipt" });
     }
   });
 

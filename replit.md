@@ -43,7 +43,9 @@ Preferred communication style: Simple, everyday language.
 ### Transaction Management
 - **Core Entity**: Transactions with amount, description, recipient, payment method
 - **Approval Workflow**: Multi-level approval based on user roles and amount thresholds
-- **File Handling**: Receipt upload with validation (PDF, JPG, PNG, 5MB limit)
+- **Multiple Receipt Support**: Upload multiple receipts per transaction, add receipts to existing transactions
+- **File Handling**: Receipt upload with validation (PDF, JPG, PNG, 5MB limit, up to 10 files per upload)
+- **Receipt Management**: View, download, and delete receipts with role-based permissions
 - **Balance Tracking**: Real-time running balance calculation
 - **Status Tracking**: Pending, approved, rejected states with audit trail
 
@@ -70,9 +72,11 @@ Preferred communication style: Simple, everyday language.
 
 ### File Management
 1. **Upload**: Files stored in `/uploads` directory with unique names
-2. **Validation**: File type and size validation on both client and server
-3. **Security**: Authenticated access to uploaded files
-4. **Association**: Files linked to transactions via URL and filename fields
+2. **Multiple Receipts**: Support for multiple receipts per transaction using dedicated receipts table
+3. **Late Addition**: Add receipts to existing transactions after initial submission
+4. **Validation**: File type and size validation on both client and server (PDF, JPG, PNG, 5MB limit)
+5. **Security**: Authenticated access to uploaded files with role-based deletion permissions
+6. **Database Relations**: Receipts table with foreign key references to transactions and users
 
 ## External Dependencies
 

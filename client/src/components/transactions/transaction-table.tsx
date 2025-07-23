@@ -3,7 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, Download, ChevronLeft, ChevronRight, Upload } from "lucide-react";
+import ReceiptUpload from "@/components/receipts/receipt-upload";
+import ReceiptList from "@/components/receipts/receipt-list";
 
 interface Transaction {
   id: number;
@@ -149,6 +151,14 @@ export default function TransactionTable({
                         <Download className="w-4 h-4" />
                       </Button>
                     )}
+                    <ReceiptUpload 
+                      transactionId={transaction.id}
+                      trigger={
+                        <Button variant="ghost" size="sm">
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -237,24 +247,15 @@ export default function TransactionTable({
                 )}
               </div>
               
-              {selectedTransaction.receiptUrl ? (
-                <div>
-                  <p className="text-gray-500 text-sm mb-2">Receipt</p>
-                  <a 
-                    href={selectedTransaction.receiptUrl}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline inline-flex items-center"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    View Receipt ({selectedTransaction.receiptFileName})
-                  </a>
+              <div>
+                <ReceiptList 
+                  transactionId={selectedTransaction.id}
+                  canDelete={true}
+                />
+                <div className="mt-3">
+                  <ReceiptUpload transactionId={selectedTransaction.id} />
                 </div>
-              ) : (
-                <div>
-                  <p className="text-gray-500 text-sm">No receipt attached</p>
-                </div>
-              )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
